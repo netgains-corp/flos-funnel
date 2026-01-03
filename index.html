@@ -68,22 +68,24 @@
             letter-spacing: 2px;
         }
         
-        /* Musik Toggle Button Style - Dezent unten links */
+        /* Musik Toggle Button Style - Moderne Glas Optik */
         .music-toggle {
-            position: fixed; /* Fixiert am Bildschirmrand */
+            position: fixed;
             bottom: 20px;
             left: 20px;
-            top: auto;
-            right: auto;
-            transform: none;
             
-            background: rgba(0, 0, 0, 0.3); /* Sehr transparentes Schwarz */
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            color: rgba(255, 255, 255, 0.5); /* Sehr dezenter Text */
+            /* Glassmorphism */
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             
-            border-radius: 50%; /* Rund */
-            width: 40px;
-            height: 40px;
+            color: rgba(255, 255, 255, 0.7);
+            
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
             padding: 0;
             font-size: 1.2rem;
             cursor: pointer;
@@ -91,29 +93,23 @@
             justify-content: center;
             align-items: center;
             transition: all 0.3s ease;
-            z-index: 9999; /* Immer sichtbar */
-            backdrop-filter: blur(4px);
+            z-index: 9999;
         }
 
         .music-toggle:hover {
-            background: rgba(0, 0, 0, 0.8);
-            color: rgba(255, 255, 255, 1);
-            border-color: rgba(255, 255, 255, 0.3);
-            transform: scale(1.1);
+            background: rgba(255, 255, 255, 0.2);
+            color: #fff;
+            transform: scale(1.05);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+            border-color: rgba(255, 255, 255, 0.4);
         }
 
         .music-toggle.playing {
             color: var(--color-primary);
             border-color: rgba(0, 172, 240, 0.5);
-            background: rgba(0, 0, 0, 0.6);
-            animation: pulse-border 2s infinite;
+            background: rgba(0, 172, 240, 0.15);
+            box-shadow: 0 0 15px rgba(0, 172, 240, 0.4);
             opacity: 1;
-        }
-
-        @keyframes pulse-border {
-            0% { box-shadow: 0 0 0 0 rgba(0, 172, 240, 0.4); }
-            70% { box-shadow: 0 0 0 6px rgba(0, 172, 240, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(0, 172, 240, 0); }
         }
 
         /* Anpassung für sehr kleine Screens */
@@ -121,9 +117,8 @@
             .music-toggle {
                 bottom: 10px;
                 left: 10px;
-                width: 35px;
-                height: 35px;
-                font-size: 1rem;
+                width: 40px;
+                height: 40px;
             }
         }
 
@@ -340,10 +335,10 @@
         <h2>Strategiegespräch</h2>
     </div>
 
-    <!-- Audio Element - Klassische Musik (SoundHelix) -->
+    <!-- Audio Element - Klassische Musik (Erik Satie - Gymnopédie No. 1) -->
     <!-- 'autoplay' Attribut hinzugefügt, 'preload' auf auto -->
     <audio id="bgMusic" loop preload="auto" autoplay>
-        <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg">
+        <source src="https://cdn.pixabay.com/audio/2022/03/10/audio_4a11a72764.mp3" type="audio/mpeg">
         Your browser does not support the audio element.
     </audio>
 
@@ -475,7 +470,7 @@
 
 <script>
     // --- KONFIGURATION ---
-    const N8N_WEBHOOK_URL = 'https://dein-n8n-server.com/webhook/pfad-zu-florian'; 
+    const N8N_WEBHOOK_URL = 'https://n8n.srv1164949.hstgr.cloud/webhook/c775ebbb-3997-4d31-8d2c-f7a74bf9bf04'; 
     const CALENDLY_LINK = 'https://calendly.com/f-merzenich/60min';
 
     let currentStep = 1;
@@ -497,14 +492,12 @@
                 // Autoplay hat funktioniert
                 isMusicPlaying = true;
                 btn.classList.add("playing");
-                btn.style.opacity = "1";
             })
             .catch(error => {
                 // Autoplay wurde blockiert (Browser Policy)
                 console.log("Autoplay prevented by browser policy.");
                 isMusicPlaying = false;
                 btn.classList.remove("playing");
-                btn.style.opacity = "0.5"; // Button als inaktiv kennzeichnen
             });
         }
     });
@@ -671,8 +664,13 @@
         };
 
         try {
-            // An n8n senden
-            // await fetch(N8N_WEBHOOK_URL, { ... });
+            // Sende an n8n (CORS muss auf dem Server erlaubt sein oder es gibt einen Fehler im Browser, 
+            // wobei der Request oft trotzdem durchgeht bei 'no-cors' mode, aber wir nutzen hier Standard-POST)
+            await fetch(N8N_WEBHOOK_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData)
+            });
             console.log("Sende an n8n:", formData);
 
             await new Promise(r => setTimeout(r, 1000));
@@ -682,7 +680,7 @@
 
         } catch (error) {
             console.error("Fehler beim Senden:", error);
-            // Fallback: Trotzdem Kalender anzeigen
+            // Fallback: Trotzdem Kalender anzeigen, damit der Lead nicht verloren geht
             showCalendly(name, email);
         }
     }
