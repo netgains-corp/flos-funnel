@@ -56,6 +56,7 @@
             padding: 25px 20px 15px;
             text-align: center;
             border-bottom: 1px solid var(--color-border);
+            position: relative; 
         }
 
         .header h2 {
@@ -65,6 +66,65 @@
             color: var(--color-text);
             text-transform: uppercase;
             letter-spacing: 2px;
+        }
+        
+        /* Musik Toggle Button Style - Dezent unten links */
+        .music-toggle {
+            position: fixed; /* Fixiert am Bildschirmrand */
+            bottom: 20px;
+            left: 20px;
+            top: auto;
+            right: auto;
+            transform: none;
+            
+            background: rgba(0, 0, 0, 0.3); /* Sehr transparentes Schwarz */
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            color: rgba(255, 255, 255, 0.5); /* Sehr dezenter Text */
+            
+            border-radius: 50%; /* Rund */
+            width: 40px;
+            height: 40px;
+            padding: 0;
+            font-size: 1.2rem;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.3s ease;
+            z-index: 9999; /* Immer sichtbar */
+            backdrop-filter: blur(4px);
+        }
+
+        .music-toggle:hover {
+            background: rgba(0, 0, 0, 0.8);
+            color: rgba(255, 255, 255, 1);
+            border-color: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+        }
+
+        .music-toggle.playing {
+            color: var(--color-primary);
+            border-color: rgba(0, 172, 240, 0.5);
+            background: rgba(0, 0, 0, 0.6);
+            animation: pulse-border 2s infinite;
+            opacity: 1;
+        }
+
+        @keyframes pulse-border {
+            0% { box-shadow: 0 0 0 0 rgba(0, 172, 240, 0.4); }
+            70% { box-shadow: 0 0 0 6px rgba(0, 172, 240, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(0, 172, 240, 0); }
+        }
+
+        /* Anpassung für sehr kleine Screens */
+        @media (max-width: 400px) {
+            .music-toggle {
+                bottom: 10px;
+                left: 10px;
+                width: 35px;
+                height: 35px;
+                font-size: 1rem;
+            }
         }
 
         .progress-bar {
@@ -267,6 +327,11 @@
 </head>
 <body>
 
+<!-- Musik Toggle Button -->
+<button class="music-toggle" id="musicBtn" onclick="toggleMusic()" title="Hintergrundmusik an/aus">
+    <span>🎵</span>
+</button>
+
 <div class="funnel-container" id="funnelContainer">
     <div class="progress-bar">
         <div class="progress-fill" id="progressFill"></div>
@@ -274,6 +339,12 @@
     <div class="header" id="funnelHeader">
         <h2>Strategiegespräch</h2>
     </div>
+
+    <!-- Audio Element (Erik Satie - Gymnopédie No.1 - Public Domain) -->
+    <audio id="bgMusic" loop>
+        <source src="https://upload.wikimedia.org/wikipedia/commons/e/e0/Gymnopedie_No_1.ogg" type="audio/ogg">
+        Your browser does not support the audio element.
+    </audio>
 
     <form id="applicationForm">
         
@@ -404,18 +475,38 @@
 <script>
     // --- KONFIGURATION ---
     const N8N_WEBHOOK_URL = 'https://dein-n8n-server.com/webhook/pfad-zu-florian'; 
-    // Hier den Link zu Florians Calendly Seite einfügen (ohne Query-Parameter)
     const CALENDLY_LINK = 'https://calendly.com/f-merzenich/60min';
 
     let currentStep = 1;
-    const totalSteps = 5; // Jetzt 5 Schritte (4 Fragen + Kalender)
+    const totalSteps = 5; 
+    let isMusicPlaying = false;
+    const bgMusic = document.getElementById("bgMusic");
+    // Lautstärke etwas senken für Hintergrundmusik
+    bgMusic.volume = 0.3;
+
+    function toggleMusic() {
+        const btn = document.getElementById("musicBtn");
+        
+        if (isMusicPlaying) {
+            bgMusic.pause();
+            isMusicPlaying = false;
+            btn.classList.remove("playing");
+            btn.style.opacity = "0.5"; // Visuelles Feedback für "Aus"
+        } else {
+            bgMusic.play().then(() => {
+                isMusicPlaying = true;
+                btn.classList.add("playing");
+                btn.style.opacity = "1"; // Visuelles Feedback für "An"
+            }).catch(e => {
+                console.log("Autoplay prevented or error:", e);
+            });
+        }
+    }
 
     function updateProgress() {
-        // Beim letzten Schritt (Kalender) die Bar voll machen oder ausblenden
         const displayPercentage = currentStep === totalSteps ? 100 : ((currentStep - 1) / (totalSteps - 1)) * 100;
         document.getElementById('progressFill').style.width = displayPercentage + '%';
         
-        // Header anpassen für Kalender-Schritt
         if(currentStep === totalSteps) {
             document.getElementById('funnelHeader').querySelector('h2').innerText = "Termin buchen";
         }
@@ -434,7 +525,7 @@
         setTimeout(() => {
              const stepDiv = cardElement.closest('.step');
              const stepNum = parseInt(stepDiv.getAttribute('data-step'));
-             if(stepNum < 4) nextStep(stepNum + 1); // Nur bis Schritt 4 automatisch
+             if(stepNum < 4) nextStep(stepNum + 1); 
         }, 300);
     }
 
