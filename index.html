@@ -340,10 +340,10 @@
         <h2>Strategiegespräch</h2>
     </div>
 
-    <!-- Audio Element (Erik Satie - Gymnopédie No.1 - Public Domain / Kevin MacLeod Version) -->
-    <!-- MP3 Source ist kompatibler mit Safari und anderen Browsern als OGG -->
-    <audio id="bgMusic" loop preload="auto">
-        <source src="https://files.freemusicarchive.org/storage-freemusicarchive-org/music/ccCommunity/Kevin_MacLeod/Classical_Sampler/Kevin_MacLeod_-_Gymnopedie_No_1.mp3" type="audio/mpeg">
+    <!-- Audio Element - Klassische Musik (SoundHelix) -->
+    <!-- 'autoplay' Attribut hinzugefügt, 'preload' auf auto -->
+    <audio id="bgMusic" loop preload="auto" autoplay>
+        <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg">
         Your browser does not support the audio element.
     </audio>
 
@@ -485,6 +485,30 @@
     // Lautstärke etwas senken für Hintergrundmusik
     bgMusic.volume = 0.3;
 
+    // Versuche Autoplay beim Laden
+    document.addEventListener('DOMContentLoaded', function() {
+        const btn = document.getElementById("musicBtn");
+        
+        // Promise-Handling für Autoplay
+        const playPromise = bgMusic.play();
+        
+        if (playPromise !== undefined) {
+            playPromise.then(_ => {
+                // Autoplay hat funktioniert
+                isMusicPlaying = true;
+                btn.classList.add("playing");
+                btn.style.opacity = "1";
+            })
+            .catch(error => {
+                // Autoplay wurde blockiert (Browser Policy)
+                console.log("Autoplay prevented by browser policy.");
+                isMusicPlaying = false;
+                btn.classList.remove("playing");
+                btn.style.opacity = "0.5"; // Button als inaktiv kennzeichnen
+            });
+        }
+    });
+
     function toggleMusic() {
         const btn = document.getElementById("musicBtn");
         
@@ -499,9 +523,7 @@
                 btn.classList.add("playing");
                 btn.style.opacity = "1"; // Visuelles Feedback für "An"
             }).catch(e => {
-                console.log("Autoplay prevented or error:", e);
-                // Fallback für Browser, die .play() blockieren ohne User-Interaktion
-                // Sollte durch den Click Handler aber abgedeckt sein.
+                console.log("Error playing music:", e);
             });
         }
     }
