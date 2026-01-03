@@ -340,9 +340,10 @@
         <h2>Strategiegespräch</h2>
     </div>
 
-    <!-- Audio Element (Erik Satie - Gymnopédie No.1 - Public Domain) -->
-    <audio id="bgMusic" loop>
-        <source src="https://upload.wikimedia.org/wikipedia/commons/e/e0/Gymnopedie_No_1.ogg" type="audio/ogg">
+    <!-- Audio Element (Erik Satie - Gymnopédie No.1 - Public Domain / Kevin MacLeod Version) -->
+    <!-- MP3 Source ist kompatibler mit Safari und anderen Browsern als OGG -->
+    <audio id="bgMusic" loop preload="auto">
+        <source src="https://files.freemusicarchive.org/storage-freemusicarchive-org/music/ccCommunity/Kevin_MacLeod/Classical_Sampler/Kevin_MacLeod_-_Gymnopedie_No_1.mp3" type="audio/mpeg">
         Your browser does not support the audio element.
     </audio>
 
@@ -499,6 +500,8 @@
                 btn.style.opacity = "1"; // Visuelles Feedback für "An"
             }).catch(e => {
                 console.log("Autoplay prevented or error:", e);
+                // Fallback für Browser, die .play() blockieren ohne User-Interaktion
+                // Sollte durch den Click Handler aber abgedeckt sein.
             });
         }
     }
