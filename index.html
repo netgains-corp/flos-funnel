@@ -20,11 +20,21 @@
             --color-text-muted: #B0B0C0;
             --color-border: #2a2a5a;
             --font-family: 'Montserrat', sans-serif;
+            --color-error: #ff4d4d;
         }
 
         body {
             font-family: var(--font-family);
             background-color: var(--color-dark);
+            
+            /* HINTERGRUNDBILD HINZUGEFÜGT */
+            /* Linear Gradient sorgt für Verdunklung, damit Text lesbar bleibt */
+            background-image: linear-gradient(rgba(16, 16, 61, 0.8), rgba(16, 16, 61, 0.9)), url('hero_bg.JPG');
+            background-size: cover;       /* Bild deckt den gesamten Bereich ab */
+            background-position: center;  /* Bild zentriert */
+            background-attachment: fixed; /* Bild bleibt beim Scrollen fest */
+            background-repeat: no-repeat;
+            
             margin: 0;
             padding: 20px;
             display: flex;
@@ -314,6 +324,39 @@
 
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
+        /* --- Custom Notification (Replacement for alert) --- */
+        .custom-notification {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(16, 16, 61, 0.95);
+            border: 1px solid var(--color-primary);
+            padding: 15px 25px;
+            border-radius: 8px;
+            color: white;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            z-index: 10000;
+            font-size: 0.9rem;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .custom-notification.show {
+            opacity: 1;
+            visibility: visible;
+            top: 30px;
+        }
+
+        .notification-icon {
+            color: var(--color-primary);
+            font-size: 1.2rem;
+        }
+
     </style>
     <!-- Calendly Script -->
     <script type="text/javascript" src="https://assets.calendly.com/assets/external/widget.js" async></script>
@@ -321,6 +364,12 @@
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
+
+<!-- Custom Notification Element -->
+<div id="customNotification" class="custom-notification">
+    <span class="notification-icon">⚠️</span>
+    <span id="notificationMessage">Nachricht hier</span>
+</div>
 
 <!-- Musik Toggle Button -->
 <button class="music-toggle" id="musicBtn" onclick="toggleMusic()" title="Hintergrundmusik an/aus">
@@ -480,6 +529,17 @@
     // Lautstärke etwas senken für Hintergrundmusik
     bgMusic.volume = 0.3;
 
+    // Helper: Custom Notification statt alert()
+    function showNotification(msg) {
+        const notif = document.getElementById('customNotification');
+        const msgSpan = document.getElementById('notificationMessage');
+        msgSpan.innerText = msg;
+        notif.classList.add('show');
+        setTimeout(() => {
+            notif.classList.remove('show');
+        }, 3000);
+    }
+
     // Versuche Autoplay beim Laden
     document.addEventListener('DOMContentLoaded', function() {
         const btn = document.getElementById("musicBtn");
@@ -571,6 +631,11 @@
         }
     }
 
+    // Leere Dummy-Funktion für handleNoneOption, falls im HTML aufgerufen aber nicht definiert
+    function handleNoneOption(input) {
+        // Logik ist bereits in toggleCheckbox integriert
+    }
+
     document.querySelectorAll('.option-input').forEach(input => {
         input.addEventListener('click', (e) => e.stopPropagation());
         input.addEventListener('change', (e) => {
@@ -591,10 +656,10 @@
                 else card.classList.remove('selected');
                 
                 if (e.target.checked && e.target.value === 'Keine') {
-                     document.querySelectorAll('input[name="erfahrung"]:not([value="Keine"])').forEach(cb => {
-                        cb.checked = false;
-                        cb.closest('.option-card').classList.remove('selected');
-                    });
+                      document.querySelectorAll('input[name="erfahrung"]:not([value="Keine"])').forEach(cb => {
+                         cb.checked = false;
+                         cb.closest('.option-card').classList.remove('selected');
+                     });
                 } else if (e.target.checked && e.target.value !== 'Keine') {
                     const noneInput = document.querySelector('input[name="erfahrung"][value="Keine"]');
                     if (noneInput && noneInput.checked) {
@@ -609,15 +674,15 @@
     function nextStep(targetStep) {
         if(currentStep === 1) {
             const selected = document.querySelectorAll('input[name="erfahrung"]:checked');
-            if(selected.length === 0) { alert("Bitte wähle mindestens eine Option aus."); return; }
+            if(selected.length === 0) { showNotification("Bitte wähle mindestens eine Option aus."); return; }
         }
         if(currentStep === 2) {
             const salary = document.querySelector('input[name="gehalt"]:checked');
-            if(!salary) { alert("Bitte wähle eine Einkommensstufe aus."); return; }
+            if(!salary) { showNotification("Bitte wähle eine Einkommensstufe aus."); return; }
         }
         if(currentStep === 3) {
             const capital = document.querySelector('input[name="kapital"]:checked');
-            if(!capital) { alert("Bitte wähle dein Kapital aus."); return; }
+            if(!capital) { showNotification("Bitte wähle dein Kapital aus."); return; }
         }
 
         document.querySelector(`.step[data-step="${currentStep}"]`).classList.remove('active');
@@ -639,7 +704,7 @@
         const phone = document.getElementById('phone').value;
 
         if(!name || !email || !phone) {
-            alert("Bitte fülle alle Kontaktfelder aus.");
+            showNotification("Bitte fülle alle Kontaktfelder aus.");
             return;
         }
 
